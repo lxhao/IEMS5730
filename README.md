@@ -9,7 +9,155 @@ Community Detection in Online Social Networks
 4. 对原始输入数据重新来一轮计算，mapper中用follower 作为key，在reducer中聚合得到每个follower所关注的所有followee，得到中间结果2，后续每个任务也都会用到这个数据。
 5. 对结果1做一轮mr计算，运行前把结果2的文件，分发到每个task，运行reducer任务时先并把这个文件加载到内存，以follower作为key,关注的所有followee集合作为value，然后对结果1中的每个候选对，计算共同的followee集合和相似对
 
+IEMS5730 Spring 2024 Homework #3
+主要是spark dataframe、kafka、streaming的使用，没有太难的地方
+
 支持作业、考试辅导、代写，具体可以加微信lxhao580，老师直接接单，不经过中介平台，价格优惠，服务靠谱
+
+IEMS5730 Spring 2024 Homework 3
+Release date: Mar 15, 2024
+Due date: 23:59:00, Apr 5, 2024
+We will discuss the solution soon after the deadline. No late homework will be accepted!
+Every Student MUST include the following statement, together with his/her signature in the
+submitted homework.
+I declare that the assignment submitted on Blackboard system is original
+except for source material explicitly acknowledged, and that thea same or
+related material has not been previously submitted for another course. I
+also acknowledge that I am aware of University policy and regulations on
+honesty in academic work, and of the disciplinary guidelines and
+procedures applicable to breaches of such policy and regulations, as
+contained in the website
+http://www.cuhk.edu.hk/policy/academichonesty/.
+Signed (Student_________________________) Date:______________________________
+Name_________________________________ SID_______________________________
+Submission notice:
+● Submit your homework via the elearning system
+● All students are required to submit this assignment.
+General homework policies:
+A student may discuss the problems with others. However, the work a student turns in must
+be created COMPLETELY by oneself ALONE. A student may not share ANY written work or
+pictures, nor may one copy answers from any source other than one’s own brain.
+Each student MUST LIST on the homework paper the name of every person he/she has
+discussed or worked with. If the answer includes content from any other source, the
+student MUST STATE THE SOURCE. Failure to do so is cheating and will result in
+sanctions. Copying answers from someone else is cheating even if one lists their name(s) on
+the homework.
+If there is information you need to solve a problem but the information is not stated in the
+problem, try to find the data somewhere. If you cannot find it, state what data you need,
+make a reasonable estimate of its value and justify any assumptions you make. You will be
+graded not only on whether your answer is correct but also on whether you have done an
+intelligent analysis.
+[Submission Requirements]
+1. Submit the source codes and outputs of your programs in one single PDF report.
+Besides, for each key step, you should also present the commands used (if
+applicable), the descriptions (in pure texts), and illustrations (in figures/ screenshots)
+that help convey and clarify your ideas for solving the problems.
+2. Package all the source codes (as you included in Step 1) into a zip file.
+3. Please submit both the PDF report and the zip file (i.e., you need to submit two
+separate files) to CUHK Blackboard.
+Q1 [20 marks]: Spark SQL
+In this question, we will analyze the report of crime incidents in Washington D.C. . The dataset
+comes from the District of Columbia's Open Data Catalog. Download the report of crime
+incidents in 2013 from:
+http://opendata.dc.gov/datasets/crime-incidents-in-2013
+Upload the data to HDFS. After you explore this CSV file, you can find it consists of around
+20 columns. You need to submit your Spark application to a Hadoop cluster (either
+your own Hadoop cluster or use the Spark Installation in DIC).
+(a) [5 marks] We are interested in the following information:
+(CCN, REPORT_DATE, OFFENSE, METHOD, END_DATE, DISTRICT).
+Use Spark to truncate the file and only keep these 6 items of each line of the record.
+If these fields are empty in some lines, please filter out those lines.
+(b) [5 marks] Use Spark queries[3] to count the number of each type offenses and find
+which time-slot (shift) did the most crimes occur.
+(c) [10 marks] The dataset below tracks the crime incidents from 2010 to 2018.
+http://opendata.dc.gov/datasets?q=crime%20incidents%20
+Merge these 9 tables into one and compute the percentage of gun offense for each
+year. Discuss the effect of Obama’s executive actions on gun control.
+Q2. [10 marks] Multi-node Kafka Cluster Setup
+Kafka is a distributed streaming platform used for building scalable, fault-tolerant, and real-time
+data pipelines. In this question, you are required to set up a multi-node Kafka cluster in your own
+platform. You can follow [12] or other tutorials to set up the multi-node Kafka cluster. In your
+homework submission, show the key steps and screenshots to verify all the processes
+are running.
+● You are required to run 2 brokers and each broker with 2 partitions [13] in your Kafka
+cluster.
+● After installing the multi-node Kafka cluster, you need to create a Topic and transmit
+the message “my test message” from the kafka-console-consumer to
+kafka-console-producer. Following commands may be useful:
+$ bin/kafka-topics.sh --create --zookeeper localhost:2181
+--replication-factor 2 --partitions 2 --topic my-test-topic
+//create a topic
+$ bin/kafka-console-producer.sh --broker-list localhost:9092
+--topic my-test-topic
+//publish some messages to our topic
+$ bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic
+my-test-topic --from-beginning
+//consume some messages of our topic
+Q3. [40 marks] Count the Most Frequent Hashtags with Spark
+RDD Streaming
+In this question, you are required to count the most frequent words under the Twitter hashtag
+“bitcoin”. Specifically, you are required to write a Kafka producer to ingest the Twitter dataset
+[8] into Kafka. The Kafka producer should send the data to the Kafka cluster based on the
+time interval (see below for detailed instructions). You then write a Spark RDD streaming
+program to consume the data from Kafka (i.e., working as a Kafka consumer) and count the
+top-30 most frequent hashtags among the tweets. The basic idea is to use Kafka as the
+pipeline to transmit tweets from the dataset to Spark (i.e., “KafkaUtils.createDirectStream”
+class worked as a Kafka Consumer). You need to use the low-level streaming interface
+(Spark RDD Streaming) and launch your Spark program over your own Kafka cluster/IE DIC
+cluster. More detailed instructions are as follows:
+i) Create a topic with 2 brokers and 2 partitions for each broker. Then write a Kafka
+producer or use the command-line tool to ingest the dataset [8] into Kafka. One simple
+method is as follows:
+● Download the dataset [8].
+● Create a topic.
+$ bin/kafka-topics.sh --create --zookeeper kafka-zookeeper:2181
+--replication-factor 2 --partitions 2 --topic <topic>
+● Write a Kafka producer to read and spread the dataset. Below is the format of the
+dataset:
+$ tweet1,timestamp1\n
+$ tweet2,timestamp2\n
+You are required to ingest the data based on the time interval to model the real
+Twitter streaming scenario. For example, after sending tweet1, the Kafka
+producer needs to wait for a few seconds (i.e., timestamp2 - timestamp1)
+before sending the next tweet(i.e., tweet2). We provide a Kafka producer [10]
+written in python for your reference. You can modify this file or write your own
+Kafka producer.
+ii) Refer to [5] and [6] and write a Spark RDD streaming program to consume the data from
+Kafka (i.e., working as a Kafka consumer) and determine the top-30 most frequent hashtag
+for each time-window. You need to use a sliding window [11] of length of 5 minutes with a
+2-minute sliding interval. Besides, you should start your Spark program and the Kafka
+producer at the same time. Submit your Spark jobs to your own Kafka cluster/ IE DIC cluster.
+Q4. [30 marks] Spark Structured Streaming
+Use Spark structured streaming [7][9] to perform exactly the same task in Q3(a) using the
+same dataset.
+Reference
+[1] Install Helm: https://helm.sh/docs/intro/install/
+[2] Kafka-value:
+https://mobitec.ie.cuhk.edu.hk/ierg4330Spring2024/static_files/assignments/kafka-value.yml
+[3] Test client:
+https://mobitec.ie.cuhk.edu.hk/ierg4330Spring2024/static_files/assignments/kafka-testclient.
+yml
+[4] Kafka documentation: http://kafka.apache.org/documentation
+[5] Spark Streaming programming guide:
+https://spark.apache.org/docs/latest/streaming-programming-guide.html
+[6] Spark RDD streaming tutorial
+https://www.rittmanmead.com/blog/2017/01/getting-started-with-spark-streaming-with-py
+thon-and-kafka/
+[7] Spark structured streaming guide:
+https://spark.apache.org/docs/latest/streaming-programming-guide.html#dataframe-and￾sql-operations
+[8] Twitter dataset
+https://www.dropbox.com/s/jdck5tip9v4tzfw/new_tweets.txt?dl=0
+[9] Structured Streaming + Kafka Integration Guide
+https://spark.apache.org/docs/latest/structured-streaming-kafka-integration.html
+[10] Kafka Producer
+https://mobitec.ie.cuhk.edu.hk/ierg4330Spring2024/static_files/assignments/kafka_producer.
+py
+[11] Spark Streaming Sliding Window
+https://spark.apache.org/docs/latest/streaming-programming-guide.html#window-operations
+[12] Kafka installation
+https://kafka.apache.org/quickstart
+[13] Set the number of partition in Kafka
+http://kafka.apache.org/documentation.html#brokerconfigs
 
 Problem Description:
 Community detection has drawn lots of attention these years. With the popularity of online
